@@ -1,0 +1,23 @@
+{
+  "name": "sing_sing_interactive_db",
+  "version": "0.0.1",
+  "authors": [
+    "Georgiy Slobodenyuk <youanden@gmail.com>"
+  ],
+  "description": "An API and interface on top of Sing Sing's song search",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "vue": "~0.12.12",
+    "bootstrap": "v4.0.0-alpha"
+  },
+  "resolutions": {
+    "bootstrap": "v4.0.0-alpha"
+  }
+}
