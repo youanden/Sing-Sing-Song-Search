@@ -14,10 +14,6 @@
     "tests"
   ],
   "dependencies": {
-    "vue": "~0.12.12",
-    "bootstrap": "v4.0.0-alpha"
-  },
-  "resolutions": {
     "bootstrap": "v4.0.0-alpha"
   }
 }
