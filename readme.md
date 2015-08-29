@@ -23,10 +23,11 @@ Uses localstorage to save selected songs
 
 1. npm install
 2. bower install
-3. create `.env` in root directory or copy from `.env.example`
-4. php artisan migrate (if using database driver for cache and sessions)
-5. webpack (-w if you want to make edits)
-6. php artisan serve or run nginx/apache with `./public` as the web root
+3. composer install
+4. create `.env` in root directory or copy from `.env.example`
+5. php artisan migrate (if using database driver for cache and sessions)
+6. webpack (-w if you want to make edits)
+7. php artisan serve or run nginx/apache with `./public` as the web root
 
 
 ### Notes
