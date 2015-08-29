@@ -29,6 +29,9 @@ Uses localstorage to save selected songs
 6. webpack (-w if you want to make edits)
 7. php artisan serve or run nginx/apache with `./public` as the web root
 
+### Demo
+
+[Demo Link](http://dev.songsearch.youanden.me/)
 
 ### Notes
 
