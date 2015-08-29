@@ -6,51 +6,91 @@
     <link rel="stylesheet" href="/css/app.css">
   </head>
   <body>
-    <div id="app" class="container m-t">
+    <div id="app" class="container">
       <div class="row">
         <header-nav title="Sing Sing Song Search"></header-nav>
         <router-view></router-view>
       </div>
     </div>
 <script type="text/x-template" id="nav-template">
-  <nav class="navbar navbar-dark bg-primary m-t">
-    <a class="navbar-brand" href="#">{{title}}</a>
-    <ul class="nav navbar-nav">
-      <li class="nav-item" v-link="/newest-songs">
-        <a class="nav-link" href="#">Newest Songs</a>
-      </li>
-      <li class="nav-item" v-link="/my-songs">
-        <a class="nav-link" href="#">My Songs</a>
-      </li>
-    </ul>
+  <nav class="navbar navbar-dark bg-primary">
+    <button class="navbar-toggler hidden-sm-up pull-right" type="button" data-toggle="collapse" data-target="#header-nav">
+      &#9776;
+    </button>
+    <a class="navbar-brand pull-left" href="#">{{title}}</a>
+    <div class="clearfix"></div>
+    <div class="collapse navbar-toggleable-xs " id="header-nav">
+      <ul class="nav navbar-nav">
+        <li class="nav-item" v-link="/newest-songs">
+          <a class="nav-link" href="#">Newest Songs</a>
+        </li>
+        <li class="nav-item" v-link="/my-songs">
+          <a class="nav-link" href="#">My Songs</a>
+        </li>
+        <li class="nav-item" v-link="/search-songs">
+          <a class="nav-link" href="#">Search Songs</a>
+        </li>
+      </ul>
+    </div>
   </nav>
 </script>
 
 <script type="text/x-template" id="newest-songs">
-  <div class="form-group m-t col-xs-9">
-    <input v-model="searchQuery" type="search" class="form-control form-control-lg" placeholder="Search within new songs...">
+  <div class="rel">
+    <div class="row">
+      <div class="form-group m-t col-xs-9">
+        <input v-model="searchQuery" type="search" class="form-control form-control-lg" placeholder="Search within new songs...">
+      </div>
+    </div>
+    <newest-songs-grid
+      data="{{gridSongs}}"
+      columns="{{gridColumns}}"
+      filter-key="{{searchQuery}}"
+      my-songs="{{mySongs}}"
+    >
+    </newest-songs-grid>
   </div>
-  <newest-songs-grid
-    data="{{gridData}}"
-    columns="{{gridColumns}}"
-    filter-key="{{searchQuery}}"
-  >
-  </newest-songs-grid>
 </script>
 
 <script type="text/x-template" id="my-songs">
-  <div class="form-group m-t col-xs-9">
-    <input v-model="searchQuery" type="search" class="form-control form-control-lg" placeholder="Search within my songs...">
+  <div class="rel">
+    <div class="row">
+      <div class="form-group m-t col-xs-9">
+        <input v-model="searchQuery" type="search" class="form-control form-control-lg" placeholder="Search within my songs...">
+      </div>
+    </div>
+    <my-songs-grid
+      data="{{gridSongs}}"
+      columns="{{gridColumns}}"
+      filter-key="{{searchQuery}}"
+      removable="true"
+    >
+    </my-songs-grid>
   </div>
-  <my-songs-grid
-    data="{{gridData}}"
-    columns="{{gridColumns}}"
-    filter-key="{{searchQuery}}"
-  >
-  </my-songs-grid>
+</script>
+<script type="text/x-template" id="search-songs">
+  <div class="rel">
+    <div class="row">
+      <div class="form-group m-t col-xs-9">
+        <input v-model="searchQuery" type="search" class="form-control form-control-lg" placeholder="Search song name or artist...">
+      </div>
+    </div>
+    <search-songs-grid
+      data="{{gridSongs}}"
+      columns="{{gridColumns}}"
+      searchQuery="{{searchQuery}}"
+      filter-key="{{searchQuery}}"
+    >
+    </search-songs-grid>
+  </div>
 </script>
 <script type="text/x-template" id="songs-grid">
-  <span class="pull-right bg-info m-t m-b p-a m-r">Total Results: {{data.length}}</span>
+  <span class="abs t-r-0 bg-info m-t p-a m-r">Total Results: {{data.length}}</span>
+  <div class="row">
+    <div class="alert alert-success col-xs-12" role="alert" v-class="invisible : data.length">
+      <strong>Oh no!</strong> There are no songs here. No droids, my friend.
+    </div>
+  </div>
   <table class="table m-t" v-class="invisible : !data.length">
     <thead>
       <tr>
@@ -76,8 +116,14 @@
           {{entry[key]}}
         </td>
         <td>
-          <button v-on="click: addSong(entry, $event)" class="btn btn-primary">
+          <button v-if="!removable && !entry.selected" v-on="click: addSong(entry, $event)" class="btn btn-primary">
           Add
+          </button>
+          <button disabled="disabled" v-if="entry.selected" v-on="click: addSong(entry, $event)" class="btn btn-primary">
+          Added
+          </button>
+          <button v-if="removable" v-on="click: removeSong(entry, $event)" class="btn btn-danger">
+          Remove
           </button>
         </td>
       </tr>

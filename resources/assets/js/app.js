@@ -1,17 +1,58 @@
 var Vue = require('vue');
 var xr = require('xr');
+var _ = require('lodash');
+var store = require('store');
 var VueRouter = require('vue-router');
-require('../sass/app.scss');
+// debugger;
+const MY_SONGS_KEY = 'my-songs';
 
-function fetchArray(key){
-  if(localStorage.getItem(key)){
-    return JSON.parse(localStorage.getItem(key));
-  }
-  return [];
-}
-function saveArray(key, value){
-  localStorage.setItem(key, JSON.stringify(value));
-}
+require('../sass/app.scss');
+require('jquery');
+require('bootstrap');
+
+
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this, args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
+};
+
+// Initialize Store to previous value
+store.set(
+  MY_SONGS_KEY,
+  store.get(MY_SONGS_KEY) ? store.get(MY_SONGS_KEY) : []
+);
+var pushSong = function(song) {
+  var songs = store.get(MY_SONGS_KEY);
+  song = {
+    'id': song.id,
+    'name': song.name,
+    'artist': song.artist,
+    'language': song.language
+  };
+  console.log('Song Pushed', song);
+  songs.push(song);
+  store.set(MY_SONGS_KEY, songs);
+};
+var removeSong = function(song) {
+  var songs = store.get(MY_SONGS_KEY);
+  var newSongs = _.remove(songs, function(cachedSong) {
+    // console.log(cachedSong, song);
+    var removeSong = cachedSong.id !== song.id;
+    if(removeSong) { console.log(song); }
+    return removeSong;
+  });
+  store.set(MY_SONGS_KEY, newSongs);
+};
 
 Vue.use(VueRouter);
 
@@ -20,7 +61,7 @@ Vue.component('header-nav', {
   replace: false,
   props: ['title']
 });
-Vue.component('my-songs-grid', {
+Vue.component('search-songs-grid', {
   template: '#songs-grid',
   replace: false,
   props: ['data', 'columns', 'filter-key'],
@@ -41,16 +82,55 @@ Vue.component('my-songs-grid', {
     })
   },
   methods: {
+    addSong: function(song, e) {
+      e.target.setAttribute('disabled', 'disabled');
+      e.target.innerText = 'Added';
+      pushSong(song);
+    },
     sortBy: function (key) {
       this.sortKey = key
       this.reversed[key] = !this.reversed[key]
     }
   }
 });
+
+Vue.component('my-songs-grid', {
+  template: '#songs-grid',
+  replace: false,
+  props: ['data', 'columns', 'filter-key', 'removable'],
+  data: function () {
+    return {
+      data: null,
+      columns: null,
+      sortKey: '',
+      filterKey: '',
+      reversed: {}
+    }
+  },
+  compiled: function () {
+    // initialize reverse state
+    var self = this
+    this.columns.forEach(function (key) {
+      self.reversed.$add(key, false)
+    })
+  },
+  methods: {
+    sortBy: function (key) {
+      this.sortKey = key
+      this.reversed[key] = !this.reversed[key]
+    },
+    removeSong: function(song, e) {
+      // debugger;
+      e.target.setAttribute('disabled', 'disabled');
+      e.target.parentElement.parentElement.remove();
+      removeSong(song);
+    }
+  }
+});
 Vue.component('newest-songs-grid', {
   template: '#songs-grid',
   replace: false,
-  props: ['data', 'columns', 'filter-key'],
+  props: ['data', 'columns', 'filter-key', 'my-songs'],
   data: function () {
     return {
       data: null,
@@ -73,22 +153,12 @@ Vue.component('newest-songs-grid', {
       this.reversed[key] = !this.reversed[key]
     },
     addSong: function(song, e) {
-      // debugger;
       e.target.setAttribute('disabled', 'disabled');
-      if(!Cache.songs) {
-        Cache.songs = [];
-      }
-      saveArray('my-songs', Cache.songs);
-      Cache.songs.push({
-        'id': song.id,
-        'name': song.name,
-        'artist': song.artist,
-        'language': song.language
-      });
+      e.target.innerText = 'Added';
+      pushSong(song);
     }
   }
 });
-var Cache = {};
 
 var Home = Vue.extend({
   template: '#newest-songs',
@@ -96,23 +166,25 @@ var Home = Vue.extend({
     return {
       searchQuery: '',
       gridColumns: ['id', 'name', 'artist', 'language'],
-      gridData: []
+      gridSongs: [],
+      mySongs: store.get(MY_SONGS_KEY)
     };
   },
   compiled: function() {
     var self = this;
-    if(!Cache.latestSongsLoaded) {
-      xr.get('/api/v1/songs/latest').then(function(res) {
-        Cache.latestSongsLoaded = true;
-        self.$data.gridData = Cache.gridData = res.songs;
-        // self.$emit('data-loaded');
-        // debugger
+    xr.get('/api/v1/songs/latest').then(function(res) {
+      res.songs = _.map(res.songs, function(song) {
+        // debugger;
+        song.selected = !! _.findWhere(self.mySongs, {
+          'id': song.id
+        });
+        // debugger;
+        return song;
       });
-    } else {
-      // debugger;
-      self.$data.gridData = Cache.gridData;
+      self.gridSongs = res.songs;
       // self.$emit('data-loaded');
-    }
+      // debugger
+    });
   }
 });
 var MySongs = Vue.extend({
@@ -121,33 +193,51 @@ var MySongs = Vue.extend({
     return {
       searchQuery: '',
       gridColumns: ['id', 'name', 'artist', 'language'],
-      gridData: fetchArray('my-songs')
+      gridSongs: store.get(MY_SONGS_KEY)
     };
-  },
+  }
+});
+
+var SearchSongs = Vue.extend({
+  template: '#search-songs',
+  data: function() {
+    return {
+      searchQuery: '',
+      gridColumns: ['id', 'name', 'artist', 'language'],
+      gridSongs: [],
+      mySongs: store.get(MY_SONGS_KEY)
+    };
+  }
+  ,
   ready: function() {
-    // debugger;
-    this.$watch('my-songs', function(v) {
-      saveArray('my-songs', v);
+    this.$watch('searchQuery', function(inputValue) {
+      this.searchSongs(inputValue);
     });
   },
+  compiled: function() {
+    var self = this;
+    this.searchSongs = debounce(function(inputValue) {
+      if(!inputValue) { return; }
+      xr.get('/api/v1/songs/search/' + inputValue)
+        .then(function(res) {
+          // debugger;
+          res.songs = _.map(res.songs, function(song) {
+            // debugger;
+            song.selected = !! _.findWhere(self.mySongs, {
+              'id': song.id
+            });
+            // debugger;
+            return song;
+          });
+          // debugger;
+          self.gridSongs = res.songs;
+        });
+    }, 500);
+    // debugger;
+  },
   methods: {
-    removeUser: function(index){
-      this.users.$remove(index)
-    }
+    searchSongs: function() {}
   }
-  // ,
-  // compiled: function() {
-  //   var self = this;
-  //   if(!Cache.mySongsLoaded) {
-  //     Cache.mySongsLoaded = true;
-  //     self.$data.gridData = Cache.mySongs = fetchArray('my-songs');
-  //     self.$emit('data-loaded');
-  //   } else {
-  //     // debugger;
-  //     self.$data.gridData = Cache.mySongs;
-  //     self.$emit('data-loaded');
-  //   }
-  // }
 });
 
 var App = Vue.extend({});
@@ -157,7 +247,8 @@ var router = new VueRouter({
 });
 router.map({
   '/newest-songs': { component: Home },
-  '/my-songs': { component: MySongs }
+  '/my-songs': { component: MySongs },
+  '/search-songs': { component: SearchSongs }
 });
 router.start(App, '#app');
 // Vue.component('home', {

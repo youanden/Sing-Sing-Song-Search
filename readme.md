@@ -27,3 +27,8 @@ Uses localstorage to save selected songs
 4. php artisan migrate (if using database driver for cache and sessions)
 5. webpack (-w if you want to make edits)
 6. php artisan serve or run nginx/apache with `./public` as the web root
+
+
+### Notes
+
+This project is not affiliated with Sing Sing Media.

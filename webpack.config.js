@@ -34,11 +34,15 @@ module.exports = {
             NODE_ENV: '"production"'
           }
         }),
+        new webpack.ProvidePlugin({
+           $: 'jquery',
+           jQuery: 'jquery'
+       }),
         new ExtractTextPlugin('./public/css/app.css'),
         new webpack.ResolverPlugin(
             new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin("bower.json", ["main"])
         )
-        //,
+        // ,
         // new webpack.optimize.UglifyJsPlugin({
         //     compress: {
         //         warnings: false

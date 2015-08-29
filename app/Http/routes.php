@@ -60,7 +60,7 @@ $app->get('/api/v1/songs/search/{query}', function($query, Repository $cache) us
   // die($query);
   $cacheKey = 'search:' . $query;
   if($cache->has($cacheKey)) {
-    $searchResults = $cache->get('latest-songs');
+    $searchResults = $cache->get($cacheKey);
   } else {
     $postData = http_build_query(['query' => $query]);
     $opts = ['http' => [

@@ -1,5 +1,12 @@
+
+// $enable-shadows: true;
+$enable-rounded: false;
+$enable-transitions: false;
 @import 'bootstrap.scss';
 
+.rel { position: relative; }
+.abs { position: absolute; }
+.t-r-0 { top: 0; right: 0; }
 .column-id {
   font-family: monospace;
   letter-spacing: 10px;
