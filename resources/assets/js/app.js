@@ -144,6 +144,7 @@ Vue.component('my-songs-grid', {
           if(res.success) {
             var $modal = $('#lyricsModal');
             var iframe = $modal.find('iframe');
+            iframe.attr('src', '');
             iframe.attr('src', res.link);
             iframe.height(windowHeight - 150);
             $modal.modal('show');
