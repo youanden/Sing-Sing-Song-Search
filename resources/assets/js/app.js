@@ -122,8 +122,48 @@ Vue.component('my-songs-grid', {
     removeSong: function(song, e) {
       // debugger;
       e.target.setAttribute('disabled', 'disabled');
-      e.target.parentElement.parentElement.remove();
+      e.target.parentElement.parentElement.parentElement.remove();
       removeSong(song);
+    },
+    getLyrics: function(song, e) {
+      var body = document.body,
+      html = document.documentElement;
+
+      var windowHeight = Math.max( body.scrollHeight, body.offsetHeight, 
+          html.clientHeight, html.scrollHeight, html.offsetHeight );
+      var btn = e.target;
+      btn.setAttribute('disabled', 'disabled');
+      // debugger;
+      xr.post('/api/v1/song/lyrics/', {
+        name: song.name,
+        artist: song.artist,
+        language: song.language
+      }) // Hey this will do something
+        .then(function(res) {
+          // debugger;
+          if(res.success) {
+            var $modal = $('#lyricsModal');
+            var iframe = $modal.find('iframe');
+            iframe.attr('src', res.link);
+            iframe.height(windowHeight - 150);
+            $modal.modal('show');
+            btn.removeAttribute('disabled');
+          } else {
+            alert('lyrics not found, bro. Sorry.');
+          }
+          // res.songs = _.map(res.songs, function(song) {
+          //   // debugger;
+          //   song.selected = !! _.findWhere(self.mySongs, {
+          //     'id': song.id
+          //   });
+          //   // debugger;
+          //   return song;
+          // });
+          // // debugger;
+          // self.gridSongs = res.songs;
+        });
+
+
     }
   }
 });

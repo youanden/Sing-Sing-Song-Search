@@ -21,14 +21,14 @@
     <div class="clearfix"></div>
     <div class="collapse navbar-toggleable-xs " id="header-nav">
       <ul class="nav navbar-nav">
-        <li class="nav-item" v-link="/newest-songs">
-          <a class="nav-link" href="#">Newest Songs</a>
+        <li class="nav-item" v-link="/search-songs">
+          <a class="nav-link" href="#">Search Songs</a>
         </li>
         <li class="nav-item" v-link="/my-songs">
           <a class="nav-link" href="#">My Songs</a>
         </li>
-        <li class="nav-item" v-link="/search-songs">
-          <a class="nav-link" href="#">Search Songs</a>
+        <li class="nav-item" v-link="/newest-songs">
+          <a class="nav-link" href="#">Newest Songs</a>
         </li>
       </ul>
     </div>
@@ -122,15 +122,42 @@
           <button disabled="disabled" v-if="entry.selected" v-on="click: addSong(entry, $event)" class="btn btn-primary">
           Added
           </button>
-          <button v-if="removable" v-on="click: removeSong(entry, $event)" class="btn btn-danger">
-          Remove
-          </button>
+          <div class="btn-group" v-if="removable" >
+
+            <button v-on="click: getLyrics(entry, $event)" class="btn btn-primary">
+            LYRICS
+            </button>
+            <button v-if="removable" v-on="click: removeSong(entry, $event)" class="btn btn-danger">
+            X
+            </button>
+            <!-- <ul class="dropdown-menu">
+              <li><a href="javascript:;">Get Lyrics</a></li>
+              <li ><a href="javascript:;" >Delete</a></li>
+            </ul> -->
+          </div>
         </td>
       </tr>
     </tbody>
   </table>
 </script>
 
+<!-- <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+  Launch demo modal
+</button> -->
+
+<!-- Modal -->
+<div class="modal fade" id="lyricsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <iframe width="100%" height="500px"></iframe>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
     <script src="/js/app.js"></script>
   </body>
 </html>

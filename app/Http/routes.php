@@ -2,6 +2,8 @@
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Http\Request;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -99,5 +101,64 @@ $app->get('/api/v1/songs/search/{query}', function($query, Repository $cache) us
     $cache->put($cacheKey, $searchResults, $expiresAt);
   }
   return response()->json($searchResults);
+
+});
+
+$app->post('/api/v1/song/lyrics', function(Repository $cache, Request $request) use ($app) {
+
+  $song = [
+    'name' => $request->get('name'),
+    'artist' => $request->get('artist'),
+    'language' => $request->get('language')
+  ];
+
+  $api = [
+    'english' => [
+      'base' => 'http://search.azlyrics.com/search.php?q=', 
+     ],
+    'japanese' => [
+      'base' => 'http://search.j-lyric.net/index.php?',
+      'name' => 'kt',
+      'artist' => 'ka'
+    ]
+  ];
+
+
+  $song['name'] = trim(preg_replace("/\[[^)]+\]/", "", $song['name']));
+  switch($song['language']) {
+    case 'english':
+      // var_dump($song);
+      $searchQuery = urlencode(join([
+        $song['name'],
+        $song['artist']
+      ], " "));
+      
+      $results = file_get_contents($api['english']['base'] . $searchQuery);
+      
+      preg_match_all("/visitedlyr.*\n.*href=\"(.*)\"\ .*" . $song['name'] . ".*" . $song['artist'] . "/i", $results, $linkMatch);
+//        var_dump(count($linkMatch)); 
+      if(count($linkMatch) > 0) {
+        // var_dump($linkMatch[1]);
+        // return $linkMatch[1][0];
+        return [
+          'success' => true,
+          'link' => $linkMatch[1][0]
+        ];
+      }
+      break;
+    case 'japanese':
+      // print 'NOT DONE YET' . var_dump($song) . "\n";
+
+      break;
+    default:
+      // print 'Unsupported Language' . var_dump($song);
+      break;
+  }
+
+  return [
+    'success' => false
+  ];
+
+
 
 });
