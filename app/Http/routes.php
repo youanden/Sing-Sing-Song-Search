@@ -105,9 +105,9 @@ $app->get('/api/v1/songs/search/{query}', function($query, Repository $cache) us
 });
 
 $app->post('/api/v1/song/lyrics', function(Repository $cache, Request $request) use ($app) {
-
+  $name = str_replace(', THE', '', $request->get('name'));
   $song = [
-    'name' => $request->get('name'),
+    'name' => $name,
     'artist' => $request->get('artist'),
     'language' => $request->get('language')
   ];
